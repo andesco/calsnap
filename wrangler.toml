@@ -1,0 +1,26 @@
+name = "calsnap"
+main = "index.js"
+compatibility_date = "2024-03-18"
+# account_id = ""
+
+workers_dev = true
+
+# [assets]
+# directory = "./assets"
+# binding = "ASSETS"
+
+# [[routes]]
+# pattern = "calsnap.example.com"
+# custom_domain = true
+
+[[kv_namespaces]]
+binding = "CALSNAP_CALENDAR_STORE"
+# id = ""
+
+[vars]
+ALLOWED_USER_EMAIL = ""
+TEAMSNAP_CLIENT_ID = ""
+
+
+# set secrets with Wrangler CLI:
+# wrangler secret put TEAMSNAP_CLIENT_SECRET

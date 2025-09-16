@@ -1,0 +1,20 @@
+{
+  "name": "teamsnap-custom-calendar",
+  "version": "1.0.0",
+  "description": "Custom TeamSnap calendar integration with Cloudflare Workers",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "deploy:local": "wrangler deploy --config wrangler.local.toml",
+    "dev": "wrangler dev",
+    "dev:local": "wrangler dev --config wrangler.local.toml",
+    "tail": "wrangler tail",
+    "tail:local": "wrangler tail --config wrangler.local.toml"
+  },
+  "keywords": ["teamsnap", "calendar", "cloudflare", "workers", "ical"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
