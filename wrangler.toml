@@ -15,7 +15,7 @@ workers_dev = true
 
 [[kv_namespaces]]
 binding = "CALSNAP_CALENDAR_STORE"
-# id = ""
+id = ""
 
 [vars]
 ALLOWED_USER_EMAIL = ""
