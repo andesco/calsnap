@@ -1,0 +1,50 @@
+field_name,data_type,sample_value_2025_09_20,description,supports_line_breaks
+additional_location_details,String,Rink A,Additional details about the venue location,Yes (in DESCRIPTION)
+arrival_date,DateTime,2025-09-20T18:30:00Z,When team should arrive at venue,No
+can_team_enter_scores,Boolean,FALSE,Whether team can enter game scores,No
+created_at,DateTime,2025-08-26T21:38:41Z,When event was first created,No
+division_location_id,String,null,ID of division location if applicable,No
+doesnt_count_towards_record,Boolean,TRUE,Whether event counts toward team record,No
+duration_in_minutes,Integer,60,Length of event in minutes,No
+end_date,DateTime,2025-09-20T20:00:00Z,Event end time,No
+formatted_results,String,null,Formatted game results display,Yes (in DESCRIPTION)
+formatted_title,String,Exhibition at Forest Hil,Formatted event title,No (single line only)
+formatted_title_for_multi_team,String,North Toronto Leafs 2014 U12 AAA Exhibition at Forst Hill,Full formatted title with team name,No (single line only)
+game_type,String,Away,Home/Away designation for games,No
+game_type_code,Integer,2,Numeric code for game type,No
+icon_color,String,orange,Color code for event icon,No
+id,Integer,351234567,Unique event identifier,No
+is_canceled,Boolean,FALSE,Whether event is canceled,No
+is_game,Boolean,TRUE,Whether event is a game vs practice,No
+is_league_controlled,Boolean,FALSE,Whether league controls this event,No
+is_overtime,Boolean,FALSE,Whether game went to overtime,No
+is_shootout,Boolean,FALSE,Whether game went to shootout,No
+is_tbd,Boolean,FALSE,Whether event details are to be determined,No
+label,String,Exhibition,Event type label,No
+location_id,Integer,76115439,ID of the venue location,No
+location_name,String,Rinx,Name of the venue,No (single line only)
+minutes_to_arrive_early,Integer,30,How many minutes early team should arrive,No
+name,String,,Custom event name (usually empty),No (single line only)
+notes,String,null,Additional notes about the event,Yes (in DESCRIPTION)
+opponent_id,Integer,234567890,ID of opposing team,No
+opponent_name,String,Forest Hill,Name of opposing team,No
+points_for_opponent,Integer,null,Points scored by opponent,No
+points_for_team,Integer,null,Points scored by team,No
+repeating_type,String,null,Type of recurring event,No
+repeating_type_code,Integer,null,Code for recurring event type,No
+repeating_uuid,String,null,UUID for recurring event series,No
+results,String,null,Game results,Yes (in DESCRIPTION)
+results_url,String,null,URL link to detailed results,No (single URL only)
+shootout_points_for_opponent,Integer,null,Shootout points for opponent,No
+shootout_points_for_team,Integer,null,Shootout points for team,No
+source_time_zone_iana_name,String,America/New_York,Source timezone for event,No
+start_date,DateTime,2025-09-20T19:00:00Z,Event start time,No
+team_id,Integer,10039999,ID of the team,No
+time_zone,String,Eastern Time (US & Canada),Human readable timezone,No
+time_zone_description,String,Eastern Time (US & Canada),Description of timezone,No
+time_zone_iana_name,String,America/New_York,IANA timezone identifier,No
+time_zone_offset,String,-05:00,UTC offset for timezone,No
+tracks_availability,Boolean,TRUE,Whether event tracks player availability,No
+type,String,event,Always 'event' for TeamSnap events,No
+uniform,String,White,Uniform color/type to wear,No
+updated_at,DateTime,2025-08-27T17:49:10Z,When event was last modified,No

@@ -1,0 +1,17 @@
+field_name,data_type,sample_value_rinx_location,description,supports_line_breaks,ics_usage
+id,Integer,76115439,Unique location identifier,No,Internal reference
+name,String,Rinx,Name of the venue,No,Used in LOCATION field
+address,String,123 Main Street,Street address of venue,Yes (in DESCRIPTION),Can enhance LOCATION
+city,String,Toronto,City where venue is located,No,Can enhance LOCATION
+state,String,ON,State/Province,No,Can enhance LOCATION
+postal_code,String,M1M 1M1,Postal/ZIP code,No,Can enhance LOCATION
+country,String,Canada,Country,No,Can enhance LOCATION
+phone,String,-1093,Contact phone number,No,Add to DESCRIPTION
+url,String,https://rinx.ca,Venue website URL,No,Could use as separate URL property
+latitude,Float,43.7532,GPS latitude coordinate,No,Not typically used in ICS
+longitude,Float,-79.3832,GPS longitude coordinate,No,Not typically used in ICS
+notes,String,Parking available in rear,Additional venue notes,Yes (in DESCRIPTION),Add to DESCRIPTION
+details,String,Rink 1 - North entrance,Specific venue details,Yes (in DESCRIPTION),Add to DESCRIPTION
+time_zone,String,America/Toronto,Venue timezone,No,For time calculations
+created_at,DateTime,2023-01-15T10:30:00Z,When location was created,No,Internal use
+updated_at,DateTime,2024-08-15T14:22:00Z,When location was last updated,No,Internal use
