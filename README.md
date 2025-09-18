@@ -1,4 +1,8 @@
-# CalSnap · Custom Calendars for TeamSnap
+<div align="center">
+  <img src="calsnap-icon.png" alt="CalSnap Logo" width="128" height="128">
+
+  <h1>CalSnap<br /><small>Custom Calendars for TeamSnap</h1>
+</div>
 
 CalSnap delivers custom team calendar that are more detailed, clear, and usable. CalSnap deploys as a Cloudflare Worker (serverless function), connects to your TeamSnap account, and serves `.ics` iCalendar subscriptions for each team.
 
