@@ -140,6 +140,12 @@ async function serveCalendar(request, env, calendarId, forceText = false) {
 
   let events = eventsData.collection.items;
 
+  // Filter out cancelled events
+  events = events.filter(event => {
+    const isCanceled = event.data?.find(d => d.name === 'is_canceled')?.value;
+    return !isCanceled;
+  });
+
   // Apply filter
   if (filterType === 'games') {
     events = events.filter(event => {
