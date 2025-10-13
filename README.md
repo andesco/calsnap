@@ -1,12 +1,12 @@
 <div align="center">
   <img src="calsnap-icon.png" alt="CalSnap Logo" width="128" height="128">
 
-  <h1>CalSnap<br /><small>Custom Calendars for TeamSnap</h1>
+  <h1>CalSnap<br /><small>Custom Calendars for TeamSnap</small></h1>
 </div>
 
 CalSnap delivers custom team calendar that are more detailed, clear, and usable. CalSnap deploys as a Cloudflare Worker (serverless function), connects to your TeamSnap account, and serves `.ics` iCalendar subscriptions for each team.
 
-“TeamSnap already has calendars! Why use this?”
+**“TeamSnap already has calendars! Why use this?”**
 
 While TeamSnap supports calendar subscriptions, events lack useful information, team names can be too long, and descriptions are messy.
 
@@ -66,11 +66,11 @@ CalSnap uses the TeamSnap API so that your calendars include:
 
 &nbsp;
 
-# Deployment
+## Setup
 
-## step 1. Create Cloudflare Worker
+### step 1. Deploy Cloudflare Worker
 
-### option A: Cloudflare Dashboard
+#### option A: Cloudflare Dashboard
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/andesco/calsnap)
 
@@ -80,7 +80,7 @@ CalSnap uses the TeamSnap API so that your calendars include:
     http://github.com/andesco/calsnap
     ```
 
-### option B: Wrangler CLI
+#### option B: Wrangler CLI
 
 1. Create a [Cloudflare Workers KV](https://developers.cloudflare.com/kv/) namespace with Wrangler CLI and note the new namespace ID:
     ```bash
@@ -102,24 +102,23 @@ CalSnap uses the TeamSnap API so that your calendars include:
     ```
 
 4.  Note your new worker URL from the output: \
-    &nbsp; \
-    <nobr>`https://calsnap.`<b>`{subdomain}`</b>`.workers.dev`</nobr>
+    <nobr>`https://calsnap.{subdomain}.workers.dev`</nobr>
 
 
-## step 2. Create TeamSnap Application
+### step 2. Create TeamSnap Application
 
 1. [TeamSnap authentication](https://auth.teamsnap.com/) ⇢ [Your Account](https://auth.teamsnap.com/) ⇢ [Your Applications](https://auth.teamsnap.com/oauth/applications) ⇢ [New Application](https://auth.teamsnap.com/oauth/applications/new)
 
 2. Name: `TeamSnap Custom Calendar` \
    Description: `Cloudflare Worker` \
-   Redirect URI: <nobr>`https://calsnap.`<b>`{subdomain}`</b>`.workers.dev`</nobr>
+   Redirect URI: <nobr>`https://calsnap.{subdomain}.workers.dev`</nobr>
 
 3. Client ID: `{your Client ID}` \
    Client Secret: `{your Client Secret}`
    
-## step 3. Setup Cloudflare Worker
+### step 3. Setup Cloudflare Worker
 
-### option a: Cloudflare Dashboard
+#### option a: Cloudflare Dashboard
 
 1. [Workers & Pages](https://dash.cloudflare.com/?to=/:account/workers-and-pages/) ⇢ `{worker}` ⇢ Settings: <nobr>Variables and Secrets: Add:</nobr>
 2.  Type: `Text`\
@@ -129,7 +128,7 @@ CalSnap uses the TeamSnap API so that your calendars include:
     Variable name: `TEAMSNAP_CLIENT_SECRET`\
     Value: `{your Client Secret}`
 
-### option b: Wrangler CLI
+#### option b: Wrangler CLI
 
 1. set your environment variables `wrangler.toml`:
     ```toml wrangler.toml
@@ -141,7 +140,7 @@ CalSnap uses the TeamSnap API so that your calendars include:
     ```bash
     wrangler secret put TEAMSNAP_CLIENT_SECRET
     ```
-## step 4.
+### step 4.
 
 1. Open your Cloudflare Worker in a browser:
 <nobr>`https://calsnap.`<b>`{subdomain}`</b>`.workers.dev`</nobr>
@@ -149,10 +148,10 @@ CalSnap uses the TeamSnap API so that your calendars include:
 
 &nbsp;
 
-## Environment Variables
+## Required Environment Variables
 
-| Required Variable | Type | Description |
-|-------------------|------|-------------|
-| `ALLOWED_USER_EMAIL` | Text | TeamSnap email address authorized to use this calendar service. Only this user can access the service. |
-| `TEAMSNAP_CLIENT_ID` | Text | Client ID from your TeamSnap OAuth application |
-| `TEAMSNAP_CLIENT_SECRET` | Secret | Client Secret from your TeamSnap OAuth application. |
+Text: **`ALLOWED_USER_EMAIL`** <br>TeamSnap email address authorized to use this calendar service. Only this user can access the service.
+
+Text: **`TEAMSNAP_CLIENT_ID`** <br>Client ID from your TeamSnap OAuth application.
+
+Secret: **`TEAMSNAP_CLIENT_SECRET`** <br>Client Secret from your TeamSnap OAuth application.
