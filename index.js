@@ -413,13 +413,14 @@ async function parseCalendarToken(token, env) {
  */
 async function generateEventTitle(eventData, teamId, env, actualTeamName) {
   const customName = env ? await env[KV_NAMESPACE].get(`custom_team_name_${teamId}`) : null;
-  return generateEventTitleSync(eventData, customName, actualTeamName);
+  const removeOpponentNames = env ? await env[KV_NAMESPACE].get(`remove_opponent_names_${teamId}`) : null;
+  return generateEventTitleSync(eventData, customName, actualTeamName, removeOpponentNames === 'true');
 }
 
 /**
  * Synchronous helper function to generate custom event titles.
  */
-function generateEventTitleSync(event, customTeamName, actualTeamName) {
+function generateEventTitleSync(event, customTeamName, actualTeamName, removeOpponentNames = false) {
   const teamName = customTeamName || actualTeamName || 'Team';
 
   const originalTitle = event.formatted_title_for_multi_team || event.formatted_title || event.name || 'Untitled Event';
@@ -427,6 +428,10 @@ function generateEventTitleSync(event, customTeamName, actualTeamName) {
   const isGame = event.game_type === 'Game' || event.opponent_name;
 
   if (isGame && event.opponent_name) {
+    // If removeOpponentNames is enabled, use simple "Team: Game" format
+    if (removeOpponentNames) {
+      return `${teamName}: Game`;
+    }
     return `${teamName} vs. ${event.opponent_name}`;
   } else if (isGame) {
     let title = originalTitle;
@@ -724,8 +729,9 @@ async function handleTeamsApi(request, env) {
         teamData[d.name] = d.value;
       });
 
-      // Get custom team name
+      // Get custom team name and opponent name removal setting
       const customName = await env[KV_NAMESPACE].get(`custom_team_name_${teamData.id}`);
+      const removeOpponentNames = await env[KV_NAMESPACE].get(`remove_opponent_names_${teamData.id}`);
 
       // Generate calendar tokens
       const allEventsToken = await generateCalendarToken(teamData.id, 'all', env, teamData.name);
@@ -746,6 +752,7 @@ async function handleTeamsApi(request, env) {
         id: teamData.id,
         name: teamData.name,
         customName: customName,
+        removeOpponentNames: removeOpponentNames === 'true',
         calendars: {
           all: `${workerUrl}/${allEventsToken}.ics`,
           games: `${workerUrl}/${gamesOnlyToken}.ics`
@@ -785,14 +792,18 @@ async function handleTeamSettingsApi(request, env) {
     }
 
     const customName = await env[KV_NAMESPACE].get(`custom_team_name_${teamId}`);
+    const removeOpponentNames = await env[KV_NAMESPACE].get(`remove_opponent_names_${teamId}`);
 
-    return new Response(JSON.stringify({ customName }), {
+    return new Response(JSON.stringify({
+      customName,
+      removeOpponentNames: removeOpponentNames === 'true'
+    }), {
       headers: { 'Content-Type': 'application/json' }
     });
   }
 
   if (request.method === 'POST') {
-    const { teamId, customName } = await request.json();
+    const { teamId, customName, removeOpponentNames } = await request.json();
 
     if (!teamId) {
       return new Response(JSON.stringify({ error: 'Missing teamId' }), {
@@ -805,6 +816,11 @@ async function handleTeamSettingsApi(request, env) {
       await env[KV_NAMESPACE].put(`custom_team_name_${teamId}`, customName);
     } else {
       await env[KV_NAMESPACE].delete(`custom_team_name_${teamId}`);
+    }
+
+    // Handle removeOpponentNames setting
+    if (removeOpponentNames !== undefined) {
+      await env[KV_NAMESPACE].put(`remove_opponent_names_${teamId}`, String(removeOpponentNames));
     }
 
     return new Response(JSON.stringify({ success: true }), {
@@ -953,9 +969,16 @@ function getSettingsHTML() {
                                     <input class="input" type="text" id="custom-name-\${team.id}" value="\${team.customName || ''}" placeholder="Enter custom name (optional)">
                                 </div>
                                 <div class="control">
-                                    <button class="button is-primary" onclick="saveTeamName('\${team.id}')">Save</button>
+                                    <button class="button is-primary" onclick="saveTeamSettings('\${team.id}')">Save</button>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="checkbox">
+                                <input type="checkbox" id="remove-opponent-\${team.id}" \${team.removeOpponentNames ? 'checked' : ''}>
+                                Remove opponent names from game titles
+                            </label>
                         </div>
 
                         <div class="field">
@@ -1023,10 +1046,12 @@ function getSettingsHTML() {
             }
         }
 
-        async function saveTeamName(teamId) {
-            const input = document.getElementById(\`custom-name-\${teamId}\`);
-            const button = input.parentElement.nextElementSibling.querySelector('button');
-            const customName = input.value.trim();
+        async function saveTeamSettings(teamId) {
+            const nameInput = document.getElementById(\`custom-name-\${teamId}\`);
+            const removeOpponentCheckbox = document.getElementById(\`remove-opponent-\${teamId}\`);
+            const button = nameInput.parentElement.nextElementSibling.querySelector('button');
+            const customName = nameInput.value.trim();
+            const removeOpponentNames = removeOpponentCheckbox.checked;
 
             // Show loading state
             button.textContent = 'Saving...';
@@ -1040,7 +1065,8 @@ function getSettingsHTML() {
                     },
                     body: JSON.stringify({
                         teamId: teamId,
-                        customName: customName || null
+                        customName: customName || null,
+                        removeOpponentNames: removeOpponentNames
                     })
                 });
 
