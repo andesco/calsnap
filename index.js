@@ -410,6 +410,11 @@ async function parseCalendarToken(token, env) {
 
 /**
  * Helper function to generate custom event titles.
+ * @param {Object} eventData - The event data from TeamSnap API
+ * @param {string} teamId - The team ID
+ * @param {Object} env - The Cloudflare Workers environment containing KV bindings
+ * @param {string} actualTeamName - The actual team name from TeamSnap
+ * @returns {Promise<string>} The formatted event title
  */
 async function generateEventTitle(eventData, teamId, env, actualTeamName) {
   const customName = env ? await env[KV_NAMESPACE].get(`custom_team_name_${teamId}`) : null;
@@ -419,6 +424,11 @@ async function generateEventTitle(eventData, teamId, env, actualTeamName) {
 
 /**
  * Synchronous helper function to generate custom event titles.
+ * @param {Object} event - The event data
+ * @param {string|null} customTeamName - Custom team name override
+ * @param {string} actualTeamName - The actual team name from TeamSnap
+ * @param {boolean} removeOpponentNames - Whether to hide opponent names from game titles
+ * @returns {string} The formatted event title
  */
 function generateEventTitleSync(event, customTeamName, actualTeamName, removeOpponentNames = false) {
   const teamName = customTeamName || actualTeamName || 'Team';
@@ -434,6 +444,7 @@ function generateEventTitleSync(event, customTeamName, actualTeamName, removeOpp
     }
     return `${teamName} vs. ${event.opponent_name}`;
   } else if (isGame) {
+    // For games without opponent data, keep original title format regardless of removeOpponentNames setting
     let title = originalTitle;
     if (actualTeamName && customTeamName) {
       title = title.replace(new RegExp(actualTeamName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), customTeamName);
@@ -820,7 +831,29 @@ async function handleTeamSettingsApi(request, env) {
 
     // Handle removeOpponentNames setting
     if (removeOpponentNames !== undefined) {
-      await env[KV_NAMESPACE].put(`remove_opponent_names_${teamId}`, String(removeOpponentNames));
+      if (removeOpponentNames) {
+        await env[KV_NAMESPACE].put(`remove_opponent_names_${teamId}`, 'true');
+      } else {
+        await env[KV_NAMESPACE].delete(`remove_opponent_names_${teamId}`);
+      }
+    }
+
+    // Invalidate cached calendars when settings change
+    // We need to get the team name to regenerate tokens
+    const teamData = await fetchTeamSnapData(`/teams/${teamId}`, env);
+    let teamName = null;
+    if (teamData && teamData.collection && teamData.collection.items && teamData.collection.items.length > 0) {
+      teamName = teamData.collection.items[0].data.find(d => d.name === 'name').value;
+    }
+
+    if (teamName) {
+      const allEventsToken = await generateCalendarToken(teamId, 'all', env, teamName);
+      const gamesOnlyToken = await generateCalendarToken(teamId, 'games', env, teamName);
+
+      await env[KV_NAMESPACE].delete(`calendar_${allEventsToken}`);
+      await env[KV_NAMESPACE].delete(`calendar_${allEventsToken}_lastupdate`);
+      await env[KV_NAMESPACE].delete(`calendar_${gamesOnlyToken}`);
+      await env[KV_NAMESPACE].delete(`calendar_${gamesOnlyToken}_lastupdate`);
     }
 
     return new Response(JSON.stringify({ success: true }), {
@@ -977,8 +1010,9 @@ function getSettingsHTML() {
                         <div class="field">
                             <label class="checkbox">
                                 <input type="checkbox" id="remove-opponent-\${team.id}" \${team.removeOpponentNames ? 'checked' : ''}>
-                                Remove opponent names from game titles
+                                Show only team name in game titles
                             </label>
+                            <p class="help">When enabled, game titles show "\${team.customName || team.name}: Game" instead of "\${team.customName || team.name} vs. Opponent Name"</p>
                         </div>
 
                         <div class="field">
