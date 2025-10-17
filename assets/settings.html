@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamSnap Calendar Settings</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <style>
+        .calendar-url { font-family: monospace; font-size: 0.875em; background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <section class="hero is-info">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title has-text-white">TeamSnap Calendar Settings</h1>
+                <p class="subtitle has-text-white">Manage your custom calendar feeds</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <section class="section">
+            <div id="loading" class="box has-text-centered">
+                <span>Loading...</span>
+            </div>
+
+            <div id="content" style="display: none;">
+                <div class="box">
+                    <p class="has-text-weight-semibold">Logged in as: <span id="user-email" class="has-text-primary"></span></p>
+                </div>
+
+                <div class="box">
+                    <h2 class="title is-4">Your Teams</h2>
+                    <div id="teams-list"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        async function loadData() {
+            try {
+                const response = await fetch('/api/teams');
+                const data = await response.json();
+
+                if (data.error) {
+                    document.getElementById('loading').textContent = 'Error: ' + data.error;
+                    return;
+                }
+
+                document.getElementById('user-email').textContent = data.user.email;
+
+                const teamsList = document.getElementById('teams-list');
+                teamsList.innerHTML = '';
+
+                data.teams.forEach(team => {
+                    const teamDiv = document.createElement('div');
+                    teamDiv.className = 'box';
+                    teamDiv.innerHTML = `
+                        <h3 class="title is-5">${team.name}</h3>
+
+                        <div class="field">
+                            <label class="label">Custom Team Name</label>
+                            <div class="field has-addons">
+                                <div class="control is-expanded">
+                                    <input class="input" type="text" id="custom-name-${team.id}" value="${team.customName || ''}" placeholder="Enter custom name (optional)">
+                                </div>
+                                <div class="control">
+                                    <button class="button is-primary" onclick="saveTeamSettings('${team.id}')">Save</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="checkbox">
+                                <input type="checkbox" id="remove-opponent-${team.id}" ${team.removeOpponentNames ? 'checked' : ''}>
+                                Show only team name in game titles
+                            </label>
+                            <p class="help">When enabled, game titles show "${team.customName || team.name}: Game" instead of "${team.customName || team.name} vs. Opponent Name"</p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">All Events Calendar</label>
+                            <div class="control">
+                                <input class="input calendar-url" type="text" value="${team.calendars.all}" readonly onclick="this.select()">
+                            </div>
+                            <p class="help">
+                                <a href="${team.calendars.all.replace('https://', 'webcal://')}">Subscribe to All Events</a> |
+                                <a href="#" onclick="copyToClipboard('${team.calendars.all}', this); return false;">Copy All Events URL</a>
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Games Only Calendar</label>
+                            <div class="control">
+                                <input class="input calendar-url" type="text" value="${team.calendars.games}" readonly onclick="this.select()">
+                            </div>
+                            <p class="help">
+                                <a href="${team.calendars.games.replace('https://', 'webcal://')}">Subscribe to Games Only</a> |
+                                <a href="#" onclick="copyToClipboard('${team.calendars.games}', this); return false;">Copy Games Only URL</a>
+                            </p>
+                        </div>
+                    `;
+                    teamsList.appendChild(teamDiv);
+                });
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+
+            } catch (error) {
+                document.getElementById('loading').textContent = 'Error loading data: ' + error.message;
+            }
+        }
+
+        async function copyToClipboard(text, link) {
+            try {
+                await navigator.clipboard.writeText(text);
+
+                // Show success state
+                const originalText = link.textContent;
+                link.textContent = 'Copied!';
+
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    link.textContent = originalText;
+                }, 2000);
+            } catch (error) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                // Show success state
+                const originalText = link.textContent;
+                link.textContent = 'Copied!';
+
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    link.textContent = originalText;
+                }, 2000);
+            }
+        }
+
+        async function saveTeamSettings(teamId) {
+            const nameInput = document.getElementById(`custom-name-${teamId}`);
+            const removeOpponentCheckbox = document.getElementById(`remove-opponent-${teamId}`);
+            const button = nameInput.parentElement.nextElementSibling.querySelector('button');
+            const customName = nameInput.value.trim();
+            const removeOpponentNames = removeOpponentCheckbox.checked;
+
+            // Show loading state
+            button.textContent = 'Saving...';
+            button.disabled = true;
+
+            try {
+                const response = await fetch('/api/team-settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        teamId: teamId,
+                        customName: customName || null,
+                        removeOpponentNames: removeOpponentNames
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Show success state
+                    button.textContent = 'Saved!';
+                    button.className = 'button is-success';
+
+                    // Reset after 2 seconds and reload
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    throw new Error('Save failed');
+                }
+            } catch (error) {
+                // Show error state
+                button.textContent = 'Error';
+                button.className = 'button is-danger';
+
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    button.textContent = 'Save';
+                    button.className = 'button is-primary';
+                    button.disabled = false;
+                }, 2000);
+            }
+        }
+
+        // Load data when page loads
+        loadData();
+    </script>
+</body>
+</html>
