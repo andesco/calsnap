@@ -1,0 +1,1 @@
+- I use teamsnap.andrewe.dev for this project's main domain
