@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - 'assets/settings.html'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
 
 jobs:
   deploy:
