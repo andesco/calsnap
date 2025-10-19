@@ -1,203 +1,663 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TeamSnap Calendar Settings</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
-        .calendar-url { font-family: monospace; font-size: 0.875em; background-color: #f8f9fa; }
+        :root {
+            --blue-40: #006FF5;
+            --blue-15: #002E66;
+            --blue-95: #EBF4FF;
+            --orange-70: #F9A876;
+            --orange-50: #F56B15;
+            --orange-90: #FDE3D3;
+            --green-70: #7EDB70;
+            --gray-95: #F2F2F2;
+            --gray-10: #191919;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        header {
+            padding: 1.5rem 0;
+            margin-bottom: 0;
+        }
+
+        header h1 {
+            color: var(--gray-10);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: var(--orange-50);
+            color: white;
+            padding: 0.375rem 0.75rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            font-size: 0.75rem;
+            margin: .5rem 0 1.5rem 0;
+        }
+
+        .user-badge svg {
+            width: 12px;
+            height: 12px;
+            fill: white;
+        }
+
+        .notice {
+            background: linear-gradient(to right, #f0f9ff, #e0f2fe);
+            border-left: 4px solid #0284c7;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .team-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .team-section h3 {
+            margin: 0 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--pico-muted-border-color);
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .field-group {
+            margin-bottom: 0.75rem;
+        }
+
+        .field-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .field-group-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: stretch;
+        }
+
+        .field-group-row input[type="text"] {
+            flex: 1;
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+            margin: 0;
+            background: var(--blue-95);
+            border: none;
+            line-height: 1.25;
+            height: auto;
+        }
+
+        .field-group-row button {
+            font-size: 0.75rem;
+            padding: 0.375rem 1rem;
+            margin: 0;
+            background: var(--blue-40);
+            border-color: var(--blue-40);
+            color: white;
+            line-height: 1.25;
+            height: auto;
+            width: 7.5em;
+        }
+
+        .field-group-row button:hover {
+            background: var(--blue-15);
+            border-color: var(--blue-15);
+        }
+
+        .field-group-row button.reset-button {
+            background: var(--blue-95);
+            color: var(--blue-40);
+            border: none;
+        }
+
+        .field-group-row button.reset-button:hover {
+            background: var(--blue-40);
+            color: white;
+        }
+
+        .field-group input[type="text"] {
+            width: 100%;
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+            margin: 0;
+            background: var(--blue-95);
+            border: none;
+        }
+
+        .field-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .field-row label {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .field-row input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .field-row input[type="checkbox"]:checked {
+            background-color: var(--blue-40);
+            border-color: var(--blue-40);
+        }
+
+        .field-row button {
+            font-size: 0.875rem;
+            padding: 0.375rem 1rem;
+            margin: 0;
+            background: var(--blue-40);
+            border-color: var(--blue-40);
+            color: white;
+        }
+
+        .field-row button:hover {
+            background: var(--blue-15);
+            border-color: var(--blue-15);
+        }
+
+        .example-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--pico-muted-color);
+            margin: 0 0 0.75rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: nowrap;
+        }
+
+        .example-text button {
+            font-size: 0.75rem;
+            padding: 0.375rem 1rem;
+            margin: 0;
+            background: var(--blue-40);
+            border-color: var(--blue-40);
+            color: white;
+            line-height: 1.25;
+            height: auto;
+            width: 7.5em;
+        }
+
+        .example-text button:hover {
+            background: var(--blue-15);
+            border-color: var(--blue-15);
+        }
+
+        .example-text button.saved {
+            background: var(--blue-95);
+            color: var(--blue-40);
+            border: none;
+        }
+
+        .example-text button.saved:hover {
+            background: var(--blue-40);
+            color: white;
+        }
+
+        .example-text-content {
+            flex-shrink: 1;
+            min-width: 0;
+        }
+
+        .example-text button.saved + .example-text-content {
+            color: var(--blue-40);
+        }
+
+        .calendar-group {
+            margin-bottom: 0.75rem;
+        }
+
+        .calendar-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .calendar-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .calendar-row code {
+            flex: 1;
+            min-width: 200px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.75rem;
+            background: var(--blue-95);
+            border: none;
+            padding: 0.375rem 0.5rem;
+            margin: 0;
+            cursor: pointer;
+            user-select: all;
+            line-height: 1.25;
+            height: auto;
+            display: block;
+            border-radius: var(--pico-border-radius);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .calendar-row code.copied {
+            background: var(--green-70);
+            color: white;
+        }
+
+        .calendar-row a,
+        .calendar-row button {
+            font-size: 0.75rem;
+            padding: 0.375rem 0.75rem;
+            margin: 0;
+            white-space: nowrap;
+            line-height: 1.25;
+            height: auto;
+            background: var(--blue-40);
+            border-color: var(--blue-40);
+            color: white;
+            width: 7.5em;
+        }
+
+        .calendar-row a:hover,
+        .calendar-row button:hover {
+            background: var(--blue-15);
+            border-color: var(--blue-15);
+        }
+
+        .calendar-row button.copy-button {
+            background: var(--blue-95);
+            color: var(--blue-40);
+            border: none;
+            width: 7.5em;
+        }
+
+        .calendar-row button.copy-button:hover {
+            background: var(--blue-40);
+            color: white;
+        }
+
+        .calendar-row button.copied {
+            background: var(--green-70);
+            border-color: var(--green-70);
+            color: white;
+            width: 7.5em;
+            border: none;
+        }
+
+        article[aria-busy="true"] {
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
-    <section class="hero is-info">
-        <div class="hero-body">
-            <div class="container">
-                <h1 class="title has-text-white">TeamSnap Calendar Settings</h1>
-                <p class="subtitle has-text-white">Manage your custom calendar feeds</p>
-            </div>
+    <header>
+        <div class="container">
+            <h1>CalSnap Calendars for TeamSnap Teams</h1>
         </div>
-    </section>
+    </header>
 
-    <div class="container">
-        <section class="section">
-            <div id="loading" class="box has-text-centered">
-                <span>Loading...</span>
+    <main class="container">
+        <article id="loading" aria-busy="true">Loading your teams...</article>
+
+        <div id="content" style="display: none;">
+            <div class="user-badge">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                </svg>
+                <span id="user-email"></span>
             </div>
 
-            <div id="content" style="display: none;">
-                <div class="box">
-                    <p class="has-text-weight-semibold">Logged in as: <span id="user-email" class="has-text-primary"></span></p>
-                </div>
+            <article id="preview-notice" class="notice" style="display: none;">
+                <strong>Preview Mode:</strong> Showing example data. Changes will not be saved.
+            </article>
 
-                <div class="box">
-                    <h2 class="title is-4">Your Teams</h2>
-                    <div id="teams-list"></div>
-                </div>
-            </div>
-        </section>
-    </div>
+            <div id="teams-container"></div>
+        </div>
+    </main>
 
     <script>
+        const mockData = {
+            user: { email: 'user@example.com' },
+            teams: [
+                {
+                    id: '123456',
+                    name: 'North Toronto Leafs 2014 U12 AAA',
+                    customName: 'Leafs',
+                    removeOpponentNames: false,
+                    calendars: {
+                        all: 'https://calsnap.workers.dev/calendar/abc123',
+                        games: 'https://calsnap.workers.dev/calendar/abc123?type=games'
+                    }
+                },
+                {
+                    id: '789012',
+                    name: 'East York Tigers 2015 U11 AA',
+                    customName: '',
+                    removeOpponentNames: true,
+                    calendars: {
+                        all: 'https://calsnap.workers.dev/calendar/def456',
+                        games: 'https://calsnap.workers.dev/calendar/def456?type=games'
+                    }
+                }
+            ]
+        };
+
+        let isPreviewMode = false;
+
         async function loadData() {
             try {
                 const response = await fetch('/api/teams');
                 const data = await response.json();
 
                 if (data.error) {
-                    document.getElementById('loading').textContent = 'Error: ' + data.error;
-                    return;
+                    throw new Error(data.error);
                 }
 
-                document.getElementById('user-email').textContent = data.user.email;
-
-                const teamsList = document.getElementById('teams-list');
-                teamsList.innerHTML = '';
-
-                data.teams.forEach(team => {
-                    const teamDiv = document.createElement('div');
-                    teamDiv.className = 'box';
-                    teamDiv.innerHTML = `
-                        <h3 class="title is-5">${team.name}</h3>
-
-                        <div class="field">
-                            <label class="label">Custom Team Name</label>
-                            <div class="field has-addons">
-                                <div class="control is-expanded">
-                                    <input class="input" type="text" id="custom-name-${team.id}" value="${team.customName || ''}" placeholder="Enter custom name (optional)">
-                                </div>
-                                <div class="control">
-                                    <button class="button is-primary" onclick="saveTeamSettings('${team.id}')">Save</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label class="checkbox">
-                                <input type="checkbox" id="remove-opponent-${team.id}" ${team.removeOpponentNames ? 'checked' : ''}>
-                                Show only team name in game titles
-                            </label>
-                            <p class="help">When enabled, game titles show "${team.customName || team.name}: Game" instead of "${team.customName || team.name} vs. Opponent Name"</p>
-                        </div>
-
-                        <div class="field">
-                            <label class="label">All Events Calendar</label>
-                            <div class="control">
-                                <input class="input calendar-url" type="text" value="${team.calendars.all}" readonly onclick="this.select()">
-                            </div>
-                            <p class="help">
-                                <a href="${team.calendars.all.replace('https://', 'webcal://')}">Subscribe to All Events</a> |
-                                <a href="#" onclick="copyToClipboard('${team.calendars.all}', this); return false;">Copy All Events URL</a>
-                            </p>
-                        </div>
-
-                        <div class="field">
-                            <label class="label">Games Only Calendar</label>
-                            <div class="control">
-                                <input class="input calendar-url" type="text" value="${team.calendars.games}" readonly onclick="this.select()">
-                            </div>
-                            <p class="help">
-                                <a href="${team.calendars.games.replace('https://', 'webcal://')}">Subscribe to Games Only</a> |
-                                <a href="#" onclick="copyToClipboard('${team.calendars.games}', this); return false;">Copy Games Only URL</a>
-                            </p>
-                        </div>
-                    `;
-                    teamsList.appendChild(teamDiv);
-                });
-
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-
+                renderData(data);
             } catch (error) {
-                document.getElementById('loading').textContent = 'Error loading data: ' + error.message;
+                console.log('Using preview mode with mock data');
+                isPreviewMode = true;
+                renderData(mockData);
             }
         }
 
-        async function copyToClipboard(text, link) {
+        function getExampleText(team, includeOpponent) {
+            const teamName = team.customName || team.name;
+            const separator = includeOpponent ? ' vs. ' : ': ';
+            const opponent = includeOpponent ? 'Forest Hill Knights AA' : 'Game';
+            return `${teamName}${separator}${opponent}`;
+        }
+
+        function handleCheckboxChange(teamId) {
+            // Update example text and button state
+            updateExample(teamId);
+        }
+
+        function resetTeamName(teamId) {
+            const customNameInput = document.getElementById(`custom-name-${teamId}`);
+
+            // Clear the input
+            customNameInput.value = '';
+
+            // Update example and button states
+            updateExample(teamId);
+        }
+
+        function updateExample(teamId) {
+            const customNameInput = document.getElementById(`custom-name-${teamId}`);
+            const checkbox = document.getElementById(`include-opponent-${teamId}`);
+            const exampleEl = document.getElementById(`example-${teamId}`);
+            const saveBtn = document.getElementById(`save-btn-${teamId}`);
+
+            const team = {
+                name: exampleEl.dataset.teamName,
+                customName: customNameInput.value.trim()
+            };
+
+            const exampleTextSpan = exampleEl.querySelector('.example-text-content');
+            exampleTextSpan.textContent = getExampleText(team, checkbox.checked);
+
+            // Check if text value has changed from original
+            const originalTextValue = customNameInput.dataset.originalValue || '';
+            const currentTextValue = customNameInput.value.trim();
+            const textChanged = currentTextValue !== originalTextValue;
+
+            // Check if checkbox value has changed from original
+            const originalChecked = checkbox.dataset.originalChecked === 'true';
+            const currentChecked = checkbox.checked;
+            const checkboxChanged = currentChecked !== originalChecked;
+
+            // Determine if there are any changes
+            const hasChanges = textChanged || checkboxChanged;
+
+            // Update button state based on changes
+            if (hasChanges) {
+                saveBtn.textContent = 'Save';
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('saved');
+            } else {
+                saveBtn.textContent = '✓ Saved';
+                saveBtn.disabled = true;
+                saveBtn.classList.add('saved');
+            }
+        }
+
+        function renderData(data) {
+            document.getElementById('user-email').textContent = data.user.email;
+
+            if (isPreviewMode) {
+                document.getElementById('preview-notice').style.display = 'block';
+            }
+
+            const container = document.getElementById('teams-container');
+            container.innerHTML = '';
+
+            data.teams.forEach(team => {
+                const section = document.createElement('section');
+                section.className = 'team-section';
+
+                const includeOpponent = !team.removeOpponentNames;
+
+                section.innerHTML = `
+                    <h3>${team.name}</h3>
+
+                    <div class="field-group">
+                        <label for="custom-name-${team.id}">Custom Team Name:</label>
+                        <div class="field-group-row">
+                            <input
+                                type="text"
+                                id="custom-name-${team.id}"
+                                value="${team.customName || ''}"
+                                placeholder="${team.name}"
+                                data-original-value="${team.customName || ''}"
+                                oninput="updateExample('${team.id}')"
+                            >
+                            <button onclick="resetTeamName('${team.id}')" id="reset-btn-${team.id}" class="reset-button">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <label for="include-opponent-${team.id}">Include Opponent Names in Event Titles</label>
+                        <input
+                            type="checkbox"
+                            id="include-opponent-${team.id}"
+                            ${includeOpponent ? 'checked' : ''}
+                            data-original-checked="${includeOpponent}"
+                            role="switch"
+                            onchange="handleCheckboxChange('${team.id}');"
+                        >
+                    </div>
+
+                    <p class="example-text" id="example-${team.id}" data-team-name="${team.name}">
+                        <button onclick="saveTeamSettings('${team.id}')" id="save-btn-${team.id}" class="saved" disabled>✓ Saved</button>
+                        <span class="example-text-content">${getExampleText(team, includeOpponent)}</span>
+                    </p>
+
+                    <div class="calendar-group">
+                        <label>All Events:</label>
+                        <div class="calendar-row">
+                            <a href="${team.calendars.all.replace('https://', 'webcal://')}" role="button" class="secondary">Subscribe</a>
+                            <button onclick="copyToClipboard('${team.calendars.all}', this)" class="copy-button">Copy URL</button>
+                            <code onclick="selectText(this)">${team.calendars.all}</code>
+                        </div>
+                    </div>
+
+                    <div class="calendar-group">
+                        <label>Games Only:</label>
+                        <div class="calendar-row">
+                            <a href="${team.calendars.games.replace('https://', 'webcal://')}" role="button" class="secondary">Subscribe</a>
+                            <button onclick="copyToClipboard('${team.calendars.games}', this)" class="copy-button">Copy URL</button>
+                            <code onclick="selectText(this)">${team.calendars.games}</code>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(section);
+            });
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+        }
+
+        async function copyToClipboard(text, button) {
+            const originalText = button.textContent;
+
             try {
                 await navigator.clipboard.writeText(text);
+                button.textContent = 'Copied';
+                button.classList.add('copied');
+                button.classList.remove('copy-button');
 
-                // Show success state
-                const originalText = link.textContent;
-                link.textContent = 'Copied!';
-
-                // Reset after 2 seconds
                 setTimeout(() => {
-                    link.textContent = originalText;
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                    button.classList.add('copy-button');
                 }, 2000);
             } catch (error) {
-                // Fallback for older browsers
                 const textArea = document.createElement('textarea');
                 textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
                 document.body.appendChild(textArea);
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
 
-                // Show success state
-                const originalText = link.textContent;
-                link.textContent = 'Copied!';
+                button.textContent = 'Copied';
+                button.classList.add('copied');
+                button.classList.remove('copy-button');
 
-                // Reset after 2 seconds
                 setTimeout(() => {
-                    link.textContent = originalText;
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                    button.classList.add('copy-button');
+                }, 2000);
+            }
+        }
+
+        async function selectText(element) {
+            const originalText = element.textContent;
+
+            try {
+                await navigator.clipboard.writeText(originalText);
+                element.textContent = 'Copied';
+                element.classList.add('copied');
+
+                setTimeout(() => {
+                    element.textContent = originalText;
+                    element.classList.remove('copied');
+                }, 2000);
+            } catch (error) {
+                const textArea = document.createElement('textarea');
+                textArea.value = originalText;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                element.textContent = 'Copied';
+                element.classList.add('copied');
+
+                setTimeout(() => {
+                    element.textContent = originalText;
+                    element.classList.remove('copied');
                 }, 2000);
             }
         }
 
         async function saveTeamSettings(teamId) {
             const nameInput = document.getElementById(`custom-name-${teamId}`);
-            const removeOpponentCheckbox = document.getElementById(`remove-opponent-${teamId}`);
-            const button = nameInput.parentElement.nextElementSibling.querySelector('button');
-            const customName = nameInput.value.trim();
-            const removeOpponentNames = removeOpponentCheckbox.checked;
+            const checkbox = document.getElementById(`include-opponent-${teamId}`);
+            const saveBtn = document.getElementById(`save-btn-${teamId}`);
 
-            // Show loading state
-            button.textContent = 'Saving...';
-            button.disabled = true;
+            // Save current values
+            const customNameToSave = nameInput.value.trim();
+            const currentChecked = checkbox.checked;
+
+            // Show saving state
+            saveBtn.setAttribute('aria-busy', 'true');
+            saveBtn.disabled = true;
+
+            if (isPreviewMode) {
+                setTimeout(() => {
+                    // Update original values to newly saved values
+                    nameInput.dataset.originalValue = customNameToSave;
+                    checkbox.dataset.originalChecked = currentChecked.toString();
+
+                    // Set button to saved state
+                    saveBtn.textContent = '✓ Saved';
+                    saveBtn.setAttribute('aria-busy', 'false');
+                    saveBtn.disabled = true;
+                    saveBtn.classList.add('saved');
+                }, 800);
+                return;
+            }
 
             try {
                 const response = await fetch('/api/team-settings', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         teamId: teamId,
-                        customName: customName || null,
-                        removeOpponentNames: removeOpponentNames
+                        customName: customNameToSave || null,
+                        removeOpponentNames: !currentChecked
                     })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    // Show success state
-                    button.textContent = 'Saved!';
-                    button.className = 'button is-success';
+                    // Update original values to newly saved values
+                    nameInput.dataset.originalValue = customNameToSave;
+                    checkbox.dataset.originalChecked = currentChecked.toString();
 
-                    // Reset after 2 seconds and reload
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
+                    // Set button to saved state
+                    saveBtn.textContent = '✓ Saved';
+                    saveBtn.setAttribute('aria-busy', 'false');
+                    saveBtn.disabled = true;
+                    saveBtn.classList.add('saved');
                 } else {
                     throw new Error('Save failed');
                 }
             } catch (error) {
                 // Show error state
-                button.textContent = 'Error';
-                button.className = 'button is-danger';
+                saveBtn.textContent = 'Error';
+                saveBtn.setAttribute('aria-busy', 'false');
+                saveBtn.classList.remove('saved');
 
-                // Reset after 2 seconds
+                // Reset to Save state after delay
                 setTimeout(() => {
-                    button.textContent = 'Save';
-                    button.className = 'button is-primary';
-                    button.disabled = false;
-                }, 2000);
+                    saveBtn.textContent = 'Save';
+                    saveBtn.disabled = false;
+                }, 2500);
             }
         }
 
-        // Load data when page loads
         loadData();
     </script>
 </body>
