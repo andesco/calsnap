@@ -781,6 +781,8 @@ async function handleTeamsApi(request, env) {
       return {
         id: teamData.id,
         name: teamData.name,
+        divisionName: teamData.division_name || null,
+        seasonName: teamData.season_name || null,
         customName: customName,
         removeOpponentNames: removeOpponentNames === 'true',
         calendars: {
@@ -927,7 +929,22 @@ export default {
     // Handle logout
     if (path === '/logout') {
       await clearAuthTokens(env);
-      return startOAuth(request, env);
+      return new Response(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signed out – CalSnap</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+</head>
+<body>
+  <main class="container" style="max-width:480px;margin-top:4rem;text-align:center;">
+    <h2>You've been signed out</h2>
+    <p>Your CalSnap session has been cleared.</p>
+    <a href="/" role="button">Sign back in</a>
+  </main>
+</body>
+</html>`, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
     }
 
     // Handle root page - smart routing
