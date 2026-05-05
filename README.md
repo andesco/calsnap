@@ -157,6 +157,17 @@ Try the [CalSnap settings demo](https://andesco.github.io/calsnap/) to see how y
 
 &nbsp;
 
+## Authentication
+
+CalSnap uses TeamSnap OAuth. On first visit the worker redirects you to TeamSnap to authorize, then stores tokens in Cloudflare KV.
+
+- **Login:** visit the root URL — you'll be redirected to TeamSnap automatically.
+- **Logout:** visit `/logout` to clear your session and restart the OAuth flow.
+
+If your tokens become stale or are revoked by TeamSnap, the worker detects the invalid 401 response, clears the stored tokens, and redirects you back to the login flow automatically.
+
+&nbsp;
+
 ## Required Environment Variables
 
 - **`ALLOWED_USER_EMAIL`**
