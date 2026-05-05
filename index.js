@@ -720,7 +720,7 @@ async function handleTeamsApi(request, env) {
   try {
     const userData = await fetchTeamSnapData('/me', env);
 
-    if (!userData.collection || !userData.collection.items || !userData.collection.items[0]) {
+    if (!userData || !userData.collection || !userData.collection.items || !userData.collection.items[0]) {
       return new Response(JSON.stringify({ error: 'User data not found' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
