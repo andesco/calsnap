@@ -939,6 +939,7 @@ export default {
 </head>
 <body>
   <main class="container" style="max-width:480px;margin-top:4rem;text-align:center;">
+    <img src="/calsnap-icon.png" alt="CalSnap" width="64" height="64" style="margin-bottom:1rem;">
     <h2>You've been signed out</h2>
     <p>Your CalSnap session has been cleared.</p>
     <a href="/" role="button">Sign back in</a>
