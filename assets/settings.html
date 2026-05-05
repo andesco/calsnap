@@ -372,6 +372,11 @@
                 const response = await fetch('/api/teams');
                 const data = await response.json();
 
+                if (response.status === 401 || data.auth_required) {
+                    window.location.href = '/';
+                    return;
+                }
+
                 if (data.error) {
                     throw new Error(data.error);
                 }
