@@ -11,6 +11,10 @@ const TEAMSNAP_OAUTH_URL = 'https://auth.teamsnap.com/oauth/authorize';
 const TEAMSNAP_TOKEN_URL = 'https://auth.teamsnap.com/oauth/token';
 const TEAMSNAP_API_URL = 'https://api.teamsnap.com/v3';
 
+// Thrown by fetchTeamSnapData when tokens are missing or rejected by TeamSnap.
+// Distinct from a null return, which signals a non-auth API failure.
+class AuthError extends Error {}
+
 // =============================================================================
 // CALENDAR GENERATION FUNCTIONS (PRESERVED FROM ORIGINAL)
 // =============================================================================
@@ -470,7 +474,7 @@ async function fetchTeamSnapData(endpoint, env) {
     if (newTokens) {
       accessToken = newTokens.access_token;
     } else {
-      return null;
+      throw new AuthError('No valid access token');
     }
   }
 
@@ -482,7 +486,7 @@ async function fetchTeamSnapData(endpoint, env) {
   });
 
   if (response.status === 401) {
-    console.log('Token expired, attempting refresh...');
+    console.log('Token rejected, attempting refresh...');
     const newTokens = await refreshAccessToken(env);
     if (newTokens) {
       const retryResponse = await fetch(`${TEAMSNAP_API_URL}${endpoint}`, {
@@ -493,11 +497,11 @@ async function fetchTeamSnapData(endpoint, env) {
       });
       if (retryResponse.status === 401) {
         await clearAuthTokens(env);
-        return null;
+        throw new AuthError('Token invalid after refresh');
       }
       return retryResponse.ok ? await retryResponse.json() : null;
     }
-    return null;
+    throw new AuthError('Token refresh failed');
   }
 
   return response.ok ? await response.json() : null;
@@ -716,13 +720,6 @@ async function handleTeamsApi(request, env) {
   try {
     const userData = await fetchTeamSnapData('/me', env);
 
-    if (!userData) {
-      return new Response(JSON.stringify({ error: 'Not authenticated', auth_required: true }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
     if (!userData.collection || !userData.collection.items || !userData.collection.items[0]) {
       return new Response(JSON.stringify({ error: 'User data not found' }), {
         status: 500,
@@ -801,6 +798,12 @@ async function handleTeamsApi(request, env) {
     });
 
   } catch (error) {
+    if (error instanceof AuthError) {
+      return new Response(JSON.stringify({ error: 'Not authenticated', auth_required: true }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
     console.error('Teams API error:', error);
     return new Response(JSON.stringify({ error: 'Failed to fetch teams' }), {
       status: 500,
@@ -862,10 +865,14 @@ async function handleTeamSettingsApi(request, env) {
 
     // Invalidate cached calendars when settings change
     // We need to get the team name to regenerate tokens
-    const teamData = await fetchTeamSnapData(`/teams/${teamId}`, env);
     let teamName = null;
-    if (teamData && teamData.collection && teamData.collection.items && teamData.collection.items.length > 0) {
-      teamName = teamData.collection.items[0].data.find(d => d.name === 'name').value;
+    try {
+      const teamData = await fetchTeamSnapData(`/teams/${teamId}`, env);
+      if (teamData?.collection?.items?.length > 0) {
+        teamName = teamData.collection.items[0].data.find(d => d.name === 'name').value;
+      }
+    } catch {
+      // Cache invalidation is best-effort; don't fail the settings save
     }
 
     if (teamName) {
