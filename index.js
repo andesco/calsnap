@@ -491,6 +491,10 @@ async function fetchTeamSnapData(endpoint, env) {
           'Accept': 'application/json',
         },
       });
+      if (retryResponse.status === 401) {
+        await clearAuthTokens(env);
+        return null;
+      }
       return retryResponse.ok ? await retryResponse.json() : null;
     }
     return null;
@@ -502,10 +506,19 @@ async function fetchTeamSnapData(endpoint, env) {
 /**
  * Refreshes the access token using the refresh token.
  */
+async function clearAuthTokens(env) {
+  await Promise.all([
+    env[KV_NAMESPACE].delete('oauth_access_token'),
+    env[KV_NAMESPACE].delete('oauth_refresh_token'),
+    env[KV_NAMESPACE].delete('oauth_expires_at'),
+  ]);
+}
+
 async function refreshAccessToken(env) {
   const refreshToken = await env[KV_NAMESPACE].get('oauth_refresh_token');
   if (!refreshToken) {
     console.log('No refresh token available');
+    await clearAuthTokens(env);
     return null;
   }
 
@@ -543,10 +556,12 @@ async function refreshAccessToken(env) {
       return tokenData;
     } else {
       console.error('Token refresh failed:', response.status);
+      await clearAuthTokens(env);
       return null;
     }
   } catch (error) {
     console.error('Error refreshing token:', error);
+    await clearAuthTokens(env);
     return null;
   }
 }
@@ -677,7 +692,7 @@ async function handleApiRequest(request, env) {
 
   // Check authentication for API requests
   if (!(await isAuthenticated(env))) {
-    return new Response(JSON.stringify({ error: 'Not authenticated' }), {
+    return new Response(JSON.stringify({ error: 'Not authenticated', auth_required: true }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -701,7 +716,14 @@ async function handleTeamsApi(request, env) {
   try {
     const userData = await fetchTeamSnapData('/me', env);
 
-    if (!userData || !userData.collection || !userData.collection.items || !userData.collection.items[0]) {
+    if (!userData) {
+      return new Response(JSON.stringify({ error: 'Not authenticated', auth_required: true }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    if (!userData.collection || !userData.collection.items || !userData.collection.items[0]) {
       return new Response(JSON.stringify({ error: 'User data not found' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
@@ -893,6 +915,12 @@ export default {
     // Handle OAuth callback
     if (path === '/auth-callback') {
       return handleOAuthCallback(request, env);
+    }
+
+    // Handle logout
+    if (path === '/logout') {
+      await clearAuthTokens(env);
+      return startOAuth(request, env);
     }
 
     // Handle root page - smart routing
