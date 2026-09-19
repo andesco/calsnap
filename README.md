@@ -16,7 +16,13 @@ CalSnap uses the TeamSnap API so that your calendars include:
 - links to individual TeamSnap event pages
 - arrival times (minutes early)
 - event notes by team manager or coach
-- structured locations for Apple Calendar and standard geographic coordinates when TeamSnap provides valid venue latitude and longitude; otherwise, the venue remains a text address
+- venue addresses and map-aware locations when TeamSnap provides valid coordinates
+
+When a venue has valid latitude and longitude values, CalSnap emits the Apple Calendar extension `X-APPLE-STRUCTURED-LOCATION` to ensure Apple Calendar displays the location on a map with the correct title. It also emits the standard `GEO` property, so clients other than Apple Calendar can use the coordinates, with the text `LOCATION` value as a fallback.
+
+![Apple Calendar map example](assets/map-example.png)
+
+> Thanks to [Fastmail’s Text-JSCalendar](https://github.com/fastmail/Text-JSCalendar) and [@brong](https://github.com/brong) for their work on Apple calendar interoperability.
 
 Try the [CalSnap settings demo](https://andesco.github.io/calsnap/) to see how you can customize your TeamSnap team calendars:
 
@@ -162,7 +168,7 @@ Try the [CalSnap settings demo](https://andesco.github.io/calsnap/) to see how y
 
 CalSnap uses TeamSnap OAuth. On first visit the worker redirects you to TeamSnap to authorize, then stores tokens in Cloudflare KV.
 
-- **Login:** visit the root URL — you'll be redirected to TeamSnap automatically.
+- **Login:** visit the root URL — you’ll be redirected to TeamSnap automatically.
 - **Logout:** visit `/logout` to clear your session and restart the OAuth flow.
 
 If your tokens become stale or are revoked by TeamSnap, the worker detects the invalid 401 response, clears the stored tokens, and redirects you back to the login flow automatically.
