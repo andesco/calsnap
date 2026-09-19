@@ -33,8 +33,10 @@ function foldCalendarLine(line) {
 }
 
 function generateLocationProperties(name, location = {}) {
-  const address = [location.address, location.city, location.state,
-    location.postal_code, location.country].filter(Boolean).join(' ');
+  const locality = [location.city, location.state, location.postal_code]
+    .filter(Boolean).join(' ');
+  const address = [location.address, locality, location.country]
+    .filter(Boolean).join(', ');
   const title = name || location.name || '';
   const locationText = [title, address].filter(Boolean).join('\n');
   if (!locationText) return '';
@@ -51,13 +53,17 @@ function generateLocationProperties(name, location = {}) {
   const latitude = coordinate(location.latitude, 90);
   const longitude = coordinate(location.longitude, 180);
   if (latitude !== null && longitude !== null) {
-    // Parameter values use RFC 6868 escaping, unlike LOCATION's TEXT value.
-    const escapeParameter = value => value.replace(/\^/g, '^^').replace(/"/g, "^'")
-      .replace(/\r\n|\r|\n/g, '^n');
+    // Apple Calendar expects the full address in X-TITLE. Keep the value in
+    // Apple's text-escape form so it can resolve the location when imported.
+    const escapeAppleText = value => value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+      .replace(/\r\n|\r|\n/g, '\\n');
     properties += foldCalendarLine(`GEO:${latitude};${longitude}`);
-    const parameters = [`VALUE=URI`];
-    if (address) parameters.push(`X-ADDRESS="${escapeParameter(address)}"`);
-    if (locationText) parameters.push(`X-TITLE="${escapeParameter(locationText)}"`);
+    const parameters = [
+      'VALUE=URI',
+      'X-APPLE-RADIUS=100',
+      'X-APPLE-REFERENCEFRAME=0',
+      `X-TITLE="${escapeAppleText(locationText)}"`,
+    ];
     properties += foldCalendarLine(
       `X-APPLE-STRUCTURED-LOCATION;${parameters.join(';')}:geo:${latitude},${longitude}`
     );
