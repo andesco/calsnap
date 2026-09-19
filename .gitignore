@@ -29,4 +29,4 @@ wrangler.local.toml
 *.swo
 .DS_Store
 .claude/
-CLAUDE.md
+AGENTS.md
