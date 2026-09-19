@@ -16,6 +16,7 @@ CalSnap uses the TeamSnap API so that your calendars include:
 - links to individual TeamSnap event pages
 - arrival times (minutes early)
 - event notes by team manager or coach
+- structured locations for Apple Calendar and standard geographic coordinates when TeamSnap provides valid venue latitude and longitude; otherwise, the venue remains a text address
 
 Try the [CalSnap settings demo](https://andesco.github.io/calsnap/) to see how you can customize your TeamSnap team calendars:
 

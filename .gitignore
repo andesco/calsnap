@@ -14,6 +14,7 @@ yarn-error.log*
 dist/
 build/
 package/
+tmp/
 wrangler.local.toml
 
 # Environment Variables
@@ -27,6 +28,5 @@ wrangler.local.toml
 *.bak
 *.swo
 .DS_Store
-
-# Claude Code
 .claude/
+CLAUDE.md

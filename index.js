@@ -15,6 +15,56 @@ const TEAMSNAP_API_URL = 'https://api.teamsnap.com/v3';
 // Distinct from a null return, which signals a non-auth API failure.
 class AuthError extends Error {}
 
+// Fold by UTF-8 octets, without splitting a Unicode character (RFC 5545).
+function foldCalendarLine(line) {
+  const encoder = new TextEncoder();
+  let result = '';
+  let length = 0;
+  for (const character of line) {
+    const size = encoder.encode(character).length;
+    if (length + size > 75) {
+      result += '\r\n ';
+      length = 1;
+    }
+    result += character;
+    length += size;
+  }
+  return result + '\r\n';
+}
+
+function generateLocationProperties(name, location = {}) {
+  const address = [location.address, location.city, location.state,
+    location.postal_code, location.country].filter(Boolean).join(' ');
+  const title = name || location.name || '';
+  const locationText = [title, address].filter(Boolean).join('\n');
+  if (!locationText) return '';
+
+  const escapedText = locationText.replace(/\\/g, '\\\\').replace(/\r\n|\r|\n/g, '\\n')
+    .replace(/;/g, '\\;').replace(/,/g, '\\,');
+  let properties = foldCalendarLine(`LOCATION:${escapedText}`);
+  const coordinate = (value, limit) => {
+    if (typeof value !== 'number' && typeof value !== 'string') return null;
+    if (typeof value === 'string' && !value.trim()) return null;
+    const number = Number(value);
+    return Number.isFinite(number) && Math.abs(number) <= limit ? number : null;
+  };
+  const latitude = coordinate(location.latitude, 90);
+  const longitude = coordinate(location.longitude, 180);
+  if (latitude !== null && longitude !== null) {
+    // Parameter values use RFC 6868 escaping, unlike LOCATION's TEXT value.
+    const escapeParameter = value => value.replace(/\^/g, '^^').replace(/"/g, "^'")
+      .replace(/\r\n|\r|\n/g, '^n');
+    properties += foldCalendarLine(`GEO:${latitude};${longitude}`);
+    const parameters = [`VALUE=URI`];
+    if (address) parameters.push(`X-ADDRESS="${escapeParameter(address)}"`);
+    if (locationText) parameters.push(`X-TITLE="${escapeParameter(locationText)}"`);
+    properties += foldCalendarLine(
+      `X-APPLE-STRUCTURED-LOCATION;${parameters.join(';')}:geo:${latitude},${longitude}`
+    );
+  }
+  return properties;
+}
+
 // =============================================================================
 // CALENDAR GENERATION FUNCTIONS (PRESERVED FROM ORIGINAL)
 // =============================================================================
@@ -284,36 +334,25 @@ async function serveCalendar(request, env, calendarId, forceText = false) {
       }
 
       // Enhanced LOCATION field with address
-      if (eventData.location_name) {
-        let locationText = eventData.location_name;
+      if (eventData.location_name || eventData.location_id) {
+        const location = {};
 
         // Fetch location address if location_id is available
         if (eventData.location_id) {
           try {
             const locationData = await fetchTeamSnapData(`/locations/${eventData.location_id}`, env);
             if (locationData?.collection?.items?.[0]) {
-              const location = {};
               locationData.collection.items[0].data.forEach(field => {
                 location[field.name] = field.value;
               });
 
-              // Build address string
-              let addressParts = [];
-              if (location.address) addressParts.push(location.address);
-              if (location.city) addressParts.push(location.city);
-              if (location.state) addressParts.push(location.state);
-              if (location.postal_code) addressParts.push(location.postal_code);
-
-              if (addressParts.length > 0) {
-                locationText += `\\n${addressParts.join(' ')}`;
-              }
             }
           } catch (error) {
             console.warn(`Could not fetch location data for location ${eventData.location_id}:`, error);
           }
         }
 
-        eventBlock += `LOCATION:${locationText.replace(/,/g, '\\,')}\r\n`;
+        eventBlock += generateLocationProperties(eventData.location_name, location);
       }
 
       // Set URL to TeamSnap event page
@@ -978,4 +1017,3 @@ export default {
     }
   }
 };
-
